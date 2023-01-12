@@ -1,0 +1,4 @@
+#+title: guix-emacs-latest
+#+subtitle: Guix channel for the latest commits of emacs-xyz packages
+
+WIP
