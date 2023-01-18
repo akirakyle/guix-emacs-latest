@@ -37,7 +37,10 @@
   (let* ((emacs-packages
           (module-map (lambda (sym var) (cons sym var))
                       (resolve-module '(gnu packages emacs-xyz))))
-         (pkg-data (filter-map mk-pkg-commit-hash emacs-packages)))
-    ;;(pkg-data (filter-map mk-pkg-commit-hash (take emacs-packages 10))))
+         ;(pkg-data (filter-map mk-pkg-commit-hash (take emacs-packages 10)))
+         (pkg-data (filter-map mk-pkg-commit-hash emacs-packages))
+         (pkg-data-s (sort pkg-data (lambda (a b)
+                                      (string<? (symbol->string (car a))
+                                                (symbol->string(car b)))))))
     (with-atomic-file-output file
-      (lambda (port) (format port "(\n~{~s\n~})" pkg-data)))))
+      (lambda (port) (format port "(\n~{~s\n~})" pkg-data-s)))))
