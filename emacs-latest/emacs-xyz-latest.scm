@@ -35,7 +35,7 @@
 
 (define %commits-file (string-append (dirname (current-filename))
                                      file-name-separator-string
-                                     "commits.scm"))
+                                     "commits.data"))
 
 (define %pkgs (filter-map (lambda (x) (apply package-from-data x))
                   (call-with-input-file %commits-file read)))
