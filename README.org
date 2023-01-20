@@ -17,7 +17,11 @@ https://guix.gnu.org/en/manual/devel/en/guix.html#Channels
 * Usage
 
 #+begin_src scheme
-(emacs-xyz-latest 'emacs-org)
+
+(define-public with-emacs-xyz-latest
+  (package-input-rewriting %emacs-xyz-latest-replacements))
+
+(with-emacs-xyz-latest emacs-org-latest)
 #+end_src
 
 * Updating

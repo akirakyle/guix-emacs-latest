@@ -7,9 +7,7 @@
   #:use-module (guix hash)
   #:use-module (guix base32)
   #:use-module (guix packages)
-  #:use-module (emacs-latest emacs-xyz-latest)
-  #:export (write-latest-emacs-xyz
-            package-latest))
+  #:use-module (emacs-latest emacs-xyz-latest))
 
 (define (latest-commit-and-hash pkg)
   (unless (eq? git-fetch (origin-method (package-source pkg)))
@@ -43,7 +41,7 @@
 (define-public %emacs-xyz-latest-replacements '())
 ")
 
-(define (write-latest-emacs-xyz file)
+(define-public (write-latest-emacs-xyz file)
   (let* ((emacs-packages
           (module-map (lambda (sym var) (cons sym var))
                       (resolve-module '(gnu packages emacs-xyz))))
@@ -74,7 +72,7 @@
 
 (define %emacs-xyz-module (resolve-module '(gnu packages emacs-xyz)))
 
-(define (package-latest sym commit checksum)
+(define-public (package-latest sym commit checksum)
   "Return a package variant using the given commit and sha256."
   (with-exception-handler
       (lambda (e)
@@ -82,17 +80,14 @@
         #f)
     (lambda ()
       (let* ((pkg (module-ref %emacs-xyz-module sym))
+             (sym-latest (symbol-append sym '-latest))
              (pkg-latest (package-commit pkg commit checksum)))
+        (module-add! (current-module) sym-latest (make-variable pkg-latest))
+        (module-export! (current-module) (list sym-latest))
         (set! %emacs-xyz-latest-replacements
               (cons (cons pkg pkg-latest)
                     %emacs-xyz-latest-replacements))))
       #:unwind? #t))
-
-;;(define (package-commit pkg commit checksum)
-;;  (format #t "package-commit ~a ~a ~a\n" pkg commit checksum)
-;;  "blah")
-;;
-;;(define emacs-a "I am emacs-a")
 
 ;;(define-syntax package-latest-macro
 ;;  (lambda (x)
@@ -102,26 +97,3 @@
 ;;         #`(define-public #,(datum->syntax x (symbol-append sym '-latest))
 ;;             (package-commit name commit checksum)))))))
 
-;;(package-latest emacs-a "93e5ed8c495794d1ba3c04b43041b95ce01079b1" "17wxgssx5myvmxxjwd455sl47sb9wblh8npm5wg199j1d8z097w9")
-
-;;(module-map (lambda (sym var) (format #t "~a ~a\n" sym var))
-;;            (current-module))
-
-
-;;(define %commits-file (string-append (dirname (current-filename))
-;;                                     file-name-separator-string
-;;                                     "commits.data"))
-;;
-;;(define %pkgs (filter-map (lambda (x) (apply package-from-data x))
-;;                  (call-with-input-file %commits-file read)))
-
-;;(define-public %emacs-xyz-latest-replacements (map cdr %pkgs))
-;;
-;;(define-public with-emacs-xyz-latest
-;;  (package-input-rewriting %emacs-xyz-latest-replacements))
-;;
-;;(define-public (emacs-xyz-latest-only sym)
-;;  (cdr (assq-ref %pkgs sym)))
-;;
-;;(define-public (emacs-xyz-latest sym)
-;;  (with-emacs-xyz-latest (cdr (assq-ref %pkgs sym))))
