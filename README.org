@@ -1,4 +1,58 @@
-#+title: guix-emacs-latest
-#+subtitle: Guix channel for the latest commits of emacs-xyz packages
+#+title: Guix channel for the latest commits of emacs-xyz packages
 
-WIP
+* Channel setup
+https://guix.gnu.org/en/manual/devel/en/guix.html#Channels
+
+#+begin_src scheme
+(channel
+ (name 'emacs-latest)
+ (url "https://git.sr.ht/~akyle/guix-emacs-latest")
+ (introduction
+  (make-channel-introduction
+   "dd804da433e4e9ccd7408a356cd4f1bec942d28b"
+   (openpgp-fingerprint
+    "963C 2413 0BD3 BF1B 624C  EF4C 8850 284C 20B8 078D"))))
+#+end_src
+
+* Usage
+
+#+begin_src scheme
+(emacs-xyz-latest 'emacs-org)
+#+end_src
+
+* Updating
+
+#+begin_src scheme
+;; guix repl -L . -- updater.scm
+(use-modules (emacs-latest utils))
+(latest-emacs-xyz "commits.data")
+#+end_src
+
+* Testing
+
+#+begin_src scheme
+(use-modules (emacs-latest emacs-xyz-latest))
+(format #t "----------------------------\n~a\n" (emacs-xyz-latest 'emacs-org))
+#+end_src
+
+* Sourcehut Custom Readme                                          :noexport:
+
+https://man.sr.ht/git.sr.ht/#setting-a-custom-readme
+
+#+begin_src sh :results silent :exports none
+guix shell curl jq -- bash
+jq -sR '{
+    "query": "mutation UpdateRepo($id: Int!, $readme: String!) {
+      updateRepository(id: $id, input: { readme: $readme }) { id }
+    }", "variables": {
+      "id": 251847,
+      "readme": .
+    } }' < README.html \
+  | curl --oauth2-bearer $(pass show app/sr.ht) \
+    -H "Content-Type: application/json" \
+    -d@- https://git.sr.ht/query
+#+end_src
+
+
+
+
