@@ -23,13 +23,15 @@
 (define %emacs-xyz-module (resolve-module '(gnu packages emacs-xyz)))
 
 (define (package-from-data sym commit checksum)
-  (let ((var (module-variable %emacs-xyz-module sym)))
-    (if var
-        (let ((pkg (variable-ref var)))
-          (if (eq? (origin-method (package-source pkg)) git-fetch)
-              (cons sym (cons pkg (package-commit pkg commit checksum)))
-              #f))
-        #f)))
+  (with-exception-handler
+      (lambda (e)
+        (format #t "error for package: ~A\nexception: ~A\n" sym e)
+        #f)
+    (lambda ()
+      (let* ((pkg (module-ref %emacs-xyz-module sym))
+             (pkg-latest (package-commit pkg commit checksum)))
+        (cons sym (cons pkg pkg-latest))))
+      #:unwind? #t))
 
 (define %commits-file (string-append (dirname (current-filename))
                                      file-name-separator-string
