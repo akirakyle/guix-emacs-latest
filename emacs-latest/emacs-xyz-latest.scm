@@ -1,4 +1,5 @@
 (define-module (emacs-latest emacs-xyz-latest)
+  #:use-module (srfi srfi-1)
   #:use-module (guix packages)
   #:use-module (guix git)
   #:use-module (guix git-download))
@@ -19,17 +20,25 @@
        (sha256 (base32 checksum))
        (file-name (git-file-name name version))))))
 
+(define %emacs-xyz-module (resolve-module '(gnu packages emacs-xyz)))
+
 (define (package-from-data sym commit checksum)
-  (let* ((pkg (module-ref (resolve-module '(gnu packages emacs-xyz)) sym))
-         (pkg-latest (package-commit pkg commit checksum)))
-    (cons sym (cons pkg pkg-latest))))
+  (with-exception-handler
+      (lambda (e)
+        (format #t "error for package: ~A\nexception: ~A\n" sym e)
+        #f)
+    (lambda ()
+      (let* ((pkg (module-ref %emacs-xyz-module sym))
+             (pkg-latest (package-commit pkg commit checksum)))
+        (cons sym (cons pkg pkg-latest))))
+      #:unwind? #t))
 
 (define %commits-file (string-append (dirname (current-filename))
                                      file-name-separator-string
                                      "commits.scm"))
 
-(define %pkgs (map (lambda (x) (apply package-from-data x))
-                (call-with-input-file %commits-file read)))
+(define %pkgs (filter-map (lambda (x) (apply package-from-data x))
+                  (call-with-input-file %commits-file read)))
 
 (define-public %emacs-xyz-latest-replacements (map cdr %pkgs))
 
