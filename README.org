@@ -17,12 +17,16 @@ https://guix.gnu.org/en/manual/devel/en/guix.html#Channels
 * Usage
 
 #+begin_src scheme
+(use-modules (emacs-latest emacs-xyz-latest))
 
 (define-public with-emacs-xyz-latest
   (package-input-rewriting %emacs-xyz-latest-replacements))
 
 (with-emacs-xyz-latest emacs-org-latest)
 #+end_src
+
+Note that if you are importing both ~(emacs-latest utils)~ and ~(emacs-latest emacs-xyz-latest)~, then ~(emacs-latest utils)~ must be imported /after/ ~(emacs-latest emacs-xyz-latest)~.
+  
 
 * Updating
 
