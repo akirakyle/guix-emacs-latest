@@ -10,18 +10,18 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages emacs)
-  #:use-module (gnu packages emacs-xyz)
-  #:use-module (emacs-latest utils))
+  #:use-module (gnu packages emacs-xyz))
 
-;;(define-public %fixed-replacements '())
-;;(define (add-replacement old new)
-;;  (set! %fixed-replacements (cons (cons old new) %fixed-replacements)))
-;
-;(define emacs-org-latest (get-replacement emacs-org))
-(define-public emacs-org-fixed
-  (cons
-   emacs-org
-   (lambda (emacs-org-latest)
+(define-public %replacements '())
+
+(define (get-latest-pkg sym)
+  (cdr (module-ref (resolve-module '(emacs-latest commits)) sym)))
+
+(define (update-replacement old new)
+  (set! %replacements (cons (cons old new) %replacements)))
+
+(define emacs-org-latest (get-latest-pkg 'emacs-org))
+(define emacs-org-fixed
   (package
     (inherit emacs-org-latest)
     (arguments
@@ -37,9 +37,9 @@
                 ;; These files are modified during testing.
                 (with-directory-excursion "testing/examples"
                   (for-each make-file-writable
-                      '("babel.org"
-                        "ob-awk-test.org"
-                        "ob-sed-test.org"))
+                            '("babel.org"
+                              "ob-awk-test.org"
+                              "ob-sed-test.org"))
                   ;; Specify where sh executable is.
                   (let ((sh (search-input-file inputs "/bin/sh")))
                     (substitute* "babel.org"
@@ -51,24 +51,23 @@
                 (substitute* "testing/lisp/test-org.el"
                   (("test-org/org-(encode-time|time-string-to-time) .*" all)
                    (string-append all "  (skip-unless nil)\n"))))
-              )))))))))
-;(update-replacement emacs-org emacs-org-fixed)
+              )))))))
+(update-replacement emacs-org emacs-org-fixed)
 
-;; TODO should all the emacsql packages be unbundled like with MELPA?
-;;
-;;(define emacs-emacsql-fixed
-;;  (package
-;;    (inherit emacs-emacsql-latest)
-;;    (arguments
-;;     (ensure-keyword-arguments (package-arguments emacs-emacsql-latest)
-;;       `(#:emacs ,emacs-next)))
-;;    (inputs (modify-inputs (package-inputs emacs-emacsql-latest)
-;;              (delete "emacs-minimal")))))
-;;
-;;(assq-set! %replacements emacs-emacsql emacs-emacsql-fixed)
+; TODO should all the emacsql packages be unbundled like with MELPA?
+;
+;(define emacs-emacsql-fixed
+;  (package
+;    (inherit emacs-emacsql-latest)
+;    (arguments
+;     (ensure-keyword-arguments (package-arguments emacs-emacsql-latest)
+;       `(#:emacs ,emacs-next)))
+;    (inputs (modify-inputs (package-inputs emacs-emacsql-latest)
+;              (delete "emacs-minimal")))))
 
-(define emacs-emacsql-latest (get-replacement emacs-emacsql))
-(define-public emacs-emacsql-sqlite-builtin
+(define emacs-emacsql-latest (get-latest-pkg 'emacs-emacsql))
+
+(define emacs-emacsql-sqlite-builtin
   (package
     (inherit emacs-emacsql-latest)
     (name "emacs-emacsql-sqlite-builtin")
@@ -84,7 +83,7 @@ has no concept of @code{TEXT} values; it's all just Lisp objects.  The Lisp
 object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (license license:gpl3+)))
 
-(define emacs-org-roam-latest (get-replacement emacs-org-roam))
+(define emacs-org-roam-latest (get-latest-pkg 'emacs-org-roam))
 (define emacs-org-roam-fixed
   (package
     (inherit emacs-org-roam-latest)
@@ -110,8 +109,8 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
 
 ;; TODO fix upstream package definition to not hard-code version in
 ;; 'install-shared-object phase so this can be simply overriden
-(define emacs-zmq-latest (get-replacement emacs-zmq))
-(define-public emacs-zmq-fixed
+(define emacs-zmq-latest (get-latest-pkg 'emacs-zmq))
+(define emacs-zmq-fixed
   (package
     (name "emacs-zmq")
     (version (package-version emacs-zmq-latest))
@@ -147,7 +146,7 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
                    license:gpl3+)))) ;src/emacs-module.h
 (update-replacement emacs-zmq emacs-zmq-fixed)
 
-(define emacs-with-editor-latest (get-replacement emacs-with-editor))
+(define emacs-with-editor-latest (get-latest-pkg 'emacs-with-editor))
 (define emacs-with-editor-fixed
   (package
     (inherit emacs-with-editor-latest)
@@ -157,7 +156,7 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
 
 (update-replacement emacs-with-editor emacs-with-editor-fixed)
 
-(define emacs-citar-org-roam-latest (get-replacement emacs-citar-org-roam))
+(define emacs-citar-org-roam-latest (get-latest-pkg 'emacs-citar-org-roam))
 (define emacs-citar-org-roam-fixed
   (package
     (inherit emacs-citar-org-roam-latest)
@@ -180,5 +179,3 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (native-inputs (modify-inputs (package-native-inputs emacs-compat)
                          (prepend lzip)))))
 (update-replacement emacs-compat emacs-compat-latest)
-
-(rewrite-all-replacements)

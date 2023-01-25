@@ -9,15 +9,8 @@
   #:use-module (guix packages)
   #:export (latest
             package-it
-            ;get-replacement
-            ;update-replacement
-            ;rewrite-all-replacements
-            ;with-emacs-xyz-latest
             package-commit
-            ;emacs-xyz-latest
             write-latest-emacs-xyz))
-
-(eval-when (expand load eval)
 
 (define (latest-commit-and-hash pkg)
   (unless (eq? git-fetch (origin-method (package-source pkg)))
@@ -79,67 +72,6 @@
        (sha256 (base32 checksum))
        (file-name (git-file-name name version))))))
 
-;;(define %replacements-var (make-variable '()))
-;;
-;;(module-add! (resolve-module '(emacs-latest emacs-xyz)) '%replacements %replacements-var)
-;;
-;;(define (get-replacement pkg)
-;;  (assq-ref (variable-ref %replacements-var) pkg))
-;; 
-;;(define (update-replacement old new)
-;;  (variable-set! %replacements-var
-;;                 (assq-set! (variable-ref %replacements-var) old new)))
-;;
-;;(define (rewrite-all-replacements)
-;;  (variable-set! %replacements-var
-;;                 (let* ((replacements (variable-ref %replacements-var))
-;;                        (with-replacements (package-input-rewriting replacements)))
-;;                   (map (lambda (el)
-;;                          (cons (car el)
-;;                                (with-replacements (cdr el))))
-;;                        replacements))))
-
-;(define %replacements (make-variable '()))
-
-;(define (replacement-var)
-;  ;(format #t "~y\n" (module-variable (resolve-module '(emacs-latest emacs-xyz)) '%replacements))
-;  (module-variable (resolve-module '(emacs-latest emacs-xyz)) '%replacements))
-
-;(define (find-replacement pkg)
-;  (assq-ref (variable-ref (replacement-var)) pkg))
-; 
-;(define (update-replacement old new)
-;  (let* ((var (replacement-var)))
-;    (variable-set! var (assq-set! (variable-ref var) old new))))
-
-;(define %replacement-var
-;  (module-variable (resolve-module '(emacs-latest emacs-xyz)) '%replacements))
-
-;;(define (get-replacements)
-;;  (module-ref (resolve-module '(emacs-latest emacs-xyz)) '%replacements))
-;;
-;;(define (find-replacement pkg)
-;;  (assq-ref (get-replacements) pkg))
-;; 
-
-;;(define function-slot-module (define-module* '(elisp-functions) #:pure #t))
-;;
-;;(module-add! (resolve-module '(emacs-latest emacs-xyz))
-;;             '%replacements '())
-;;
-;;
-;;(define (update-replacement old new)
-;;  (module-set! (resolve-module '(emacs-latest emacs-xyz))
-;;               '%replacements (assq-set! (get-replacements) old new)))
-
-;;(define %replacements (@ (emacs-latest emacs-xyz) %replacements))
-;;
-;;(define (find-replacement pkg)
-;;  (assq-ref %replacements pkg))
-;;
-;;(define (update-replacement old new)
-;;  (set! %replacements (assq-set! %replacements old new)))
-
 (define (package-it sym commit checksum)
   (with-exception-handler
       (lambda (e)
@@ -147,25 +79,24 @@
         #f)
     (lambda ()
       (let* ((pkg (module-ref (resolve-module '(gnu packages emacs-xyz)) sym))
-             ;(sym-latest (symbol-append sym '-latest))
              (pkg-latest (package-commit pkg commit checksum)))
-        ;(format #t "package-it sym ~y ~y ~y" sym pkg pkg-latest)
-        ;;pkg-latest))
-        ;;(update-replacement pkg pkg-latest)))
-        ;(cons sym (cons pkg pkg-latest))))
         (cons pkg pkg-latest)))
       #:unwind? #t))
+
+(define-syntax latest
+  (syntax-rules ()
+    ((_ name commit checksum)
+     (define-public name (package-it 'name commit checksum)))))
 
 ;;(define-syntax latest
 ;;  (syntax-rules ()
 ;;    ((_ name commit checksum)
 ;;     (package-it 'name commit checksum))))
 
-(define-syntax latest
-  (lambda (x)
-    (syntax-case x ()
-      ((_ name commit checksum)
-       (let ((sym (syntax->datum #'name)))
-         #`(define-public #,(datum->syntax x (symbol-append sym '-l))
-             (package-it 'name commit checksum)))))))
-)
+;;(define-syntax latest
+;;  (lambda (x)
+;;    (syntax-case x ()
+;;      ((_ name commit checksum)
+;;       (let ((sym (syntax->datum #'name)))
+;;         #`(define-public #,(datum->syntax x (symbol-append sym '-l))
+;;             (package-it 'name commit checksum)))))))
