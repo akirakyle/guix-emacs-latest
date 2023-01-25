@@ -3,17 +3,21 @@
   #:use-module (guix packages)
   #:use-module (guix utils)
   #:use-module (guix gexp)
+  #:use-module (guix download)
   #:use-module (guix build-system emacs)
   #:use-module (gnu packages networking)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages compression)
   #:use-module (gnu packages emacs)
   #:use-module (gnu packages emacs-xyz)
-  #:use-module (emacs-latest commits)
   #:use-module (emacs-latest utils))
 
-(define emacs-org-latest (assq-ref %replacements emacs-org))
-
+;;(define-public %fixed-replacements '())
+;;(define (add-replacement old new)
+;;  (set! %fixed-replacements (cons (cons old new) %fixed-replacements)))
+;
+(define emacs-org-latest (emacs-xyz-latest emacs-org))
 (define emacs-org-fixed
   (package
     (inherit emacs-org-latest)
@@ -45,12 +49,9 @@
                   (("test-org/org-(encode-time|time-string-to-time) .*" all)
                    (string-append all "  (skip-unless nil)\n"))))
               )))))))
-
-(assq-set! %replacements emacs-org emacs-org-fixed)
-
+(update-replacement emacs-org emacs-org-fixed)
 
 ;; TODO should all the emacsql packages be unbundled like with MELPA?
-(define emacs-emacsql-latest (assq-ref %replacements emacs-emacsql))
 ;;
 ;;(define emacs-emacsql-fixed
 ;;  (package
@@ -63,6 +64,7 @@
 ;;
 ;;(assq-set! %replacements emacs-emacsql emacs-emacsql-fixed)
 
+(define emacs-emacsql-latest (emacs-xyz-latest emacs-emacsql))
 (define-public emacs-emacsql-sqlite-builtin
   (package
     (inherit emacs-emacsql-latest)
@@ -79,9 +81,7 @@ has no concept of @code{TEXT} values; it's all just Lisp objects.  The Lisp
 object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (license license:gpl3+)))
 
-
-(define emacs-org-roam-latest (assq-ref %replacements emacs-org-roam))
-
+(define emacs-org-roam-latest (emacs-xyz-latest emacs-org-roam))
 (define emacs-org-roam-fixed
   (package
     (inherit emacs-org-roam-latest)
@@ -102,13 +102,12 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (propagated-inputs (modify-inputs (package-propagated-inputs emacs-org-roam-latest)
                          (delete "emacs-emacsql-sqlite3")
                          (prepend emacs-emacsql-sqlite-builtin)))))
+(update-replacement emacs-org-roam emacs-org-roam-fixed)
 
-(assq-set! %replacements emacs-org-roam emacs-org-roam-fixed)
 
-
-(define emacs-zmq-latest (assq-ref %replacements emacs-zmq))
 ;; TODO fix upstream package definition to not hard-code version in
 ;; 'install-shared-object phase so this can be simply overriden
+(define emacs-zmq-latest (emacs-xyz-latest emacs-zmq))
 (define-public emacs-zmq-fixed
   (package
     (name "emacs-zmq")
@@ -143,11 +142,9 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (description "This package provides Emacs bindings to ØMQ.")
     (license (list license:gpl2+     ;zmq.el
                    license:gpl3+)))) ;src/emacs-module.h
+(update-replacement emacs-zmq emacs-zmq-fixed)
 
-(assq-set! %replacements emacs-zmq emacs-zmq-fixed)
-
-(define emacs-with-editor-latest (assq-ref %replacements emacs-with-editor))
-
+(define emacs-with-editor-latest (emacs-xyz-latest emacs-with-editor))
 (define emacs-with-editor-fixed
   (package
     (inherit emacs-with-editor-latest)
@@ -155,15 +152,28 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
                          (delete "emacs-async")
                          (prepend emacs-compat)))))
 
-(assq-set! %replacements emacs-with-editor emacs-with-editor-fixed)
+(update-replacement emacs-with-editor emacs-with-editor-fixed)
 
-(define emacs-citar-org-roam-latest (assq-ref %replacements emacs-citar-org-roam))
-
+(define emacs-citar-org-roam-latest (emacs-xyz-latest emacs-citar-org-roam))
 (define emacs-citar-org-roam-fixed
   (package
     (inherit emacs-citar-org-roam-latest)
     (arguments
      (ensure-keyword-arguments (package-arguments emacs-citar-org-roam-latest)
        `(#:emacs ,emacs-next)))))
+(update-replacement emacs-citar-org-roam emacs-citar-org-roam-fixed)
 
-(assq-set! %replacements emacs-citar-org-roam emacs-citar-org-roam-fixed)
+(define emacs-compat-latest
+  (package
+    (inherit emacs-compat)
+    (version "29.1.3.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://elpa.gnu.org/packages/"
+                                  "compat-" version ".tar.lz"))
+              (sha256
+               (base32
+                "0jnk81rg5w6zhf413nf3j72i2mr8vfdms55gahrdx28727w8gfj8"))))
+    (native-inputs (modify-inputs (package-native-inputs emacs-compat)
+                         (prepend lzip)))))
+(update-replacement emacs-compat emacs-compat-latest)

@@ -14,7 +14,7 @@ https://guix.gnu.org/en/manual/devel/en/guix.html#Channels
     "963C 2413 0BD3 BF1B 624C  EF4C 8850 284C 20B8 078D"))))
 #+end_src
 
-* Usage
+* TODO Usage
 
 The function ~emacs-xyz-latest~ will return a package using the latest commit for some emacs package that must appear in /both/ the ~emacs-latest/commits.scm~ file of this channel /and/ be defined in ~emacs-xyz~ of /you/ guix.
 Since ~emacs-xyz-latest~ does not rewrite the package inputs, ~with-emacs-xyz-latest~ is provided to rewrite package inputs using all the packages in ~emacs-latest/commits.scm~.
@@ -31,6 +31,7 @@ For example, for several packages:
      emacs-vterm
      emacs-org
      emacs-magit)))
+; FIXME: currently having propogated inputs of something in the list also in the list causes conflicting entries
 #+end_src
 
 * Updating
@@ -61,7 +62,4 @@ jq -sR '{
     -H "Content-Type: application/json" \
     -d@- https://git.sr.ht/query
 #+end_src
-
-
-
 
