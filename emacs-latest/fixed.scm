@@ -17,8 +17,11 @@
 ;;(define (add-replacement old new)
 ;;  (set! %fixed-replacements (cons (cons old new) %fixed-replacements)))
 ;
-(define emacs-org-latest (emacs-xyz-latest emacs-org))
-(define emacs-org-fixed
+;(define emacs-org-latest (get-replacement emacs-org))
+(define-public emacs-org-fixed
+  (cons
+   emacs-org
+   (lambda (emacs-org-latest)
   (package
     (inherit emacs-org-latest)
     (arguments
@@ -48,8 +51,8 @@
                 (substitute* "testing/lisp/test-org.el"
                   (("test-org/org-(encode-time|time-string-to-time) .*" all)
                    (string-append all "  (skip-unless nil)\n"))))
-              )))))))
-(update-replacement emacs-org emacs-org-fixed)
+              )))))))))
+;(update-replacement emacs-org emacs-org-fixed)
 
 ;; TODO should all the emacsql packages be unbundled like with MELPA?
 ;;
@@ -64,7 +67,7 @@
 ;;
 ;;(assq-set! %replacements emacs-emacsql emacs-emacsql-fixed)
 
-(define emacs-emacsql-latest (emacs-xyz-latest emacs-emacsql))
+(define emacs-emacsql-latest (get-replacement emacs-emacsql))
 (define-public emacs-emacsql-sqlite-builtin
   (package
     (inherit emacs-emacsql-latest)
@@ -81,7 +84,7 @@ has no concept of @code{TEXT} values; it's all just Lisp objects.  The Lisp
 object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (license license:gpl3+)))
 
-(define emacs-org-roam-latest (emacs-xyz-latest emacs-org-roam))
+(define emacs-org-roam-latest (get-replacement emacs-org-roam))
 (define emacs-org-roam-fixed
   (package
     (inherit emacs-org-roam-latest)
@@ -107,7 +110,7 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
 
 ;; TODO fix upstream package definition to not hard-code version in
 ;; 'install-shared-object phase so this can be simply overriden
-(define emacs-zmq-latest (emacs-xyz-latest emacs-zmq))
+(define emacs-zmq-latest (get-replacement emacs-zmq))
 (define-public emacs-zmq-fixed
   (package
     (name "emacs-zmq")
@@ -144,7 +147,7 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
                    license:gpl3+)))) ;src/emacs-module.h
 (update-replacement emacs-zmq emacs-zmq-fixed)
 
-(define emacs-with-editor-latest (emacs-xyz-latest emacs-with-editor))
+(define emacs-with-editor-latest (get-replacement emacs-with-editor))
 (define emacs-with-editor-fixed
   (package
     (inherit emacs-with-editor-latest)
@@ -154,7 +157,7 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
 
 (update-replacement emacs-with-editor emacs-with-editor-fixed)
 
-(define emacs-citar-org-roam-latest (emacs-xyz-latest emacs-citar-org-roam))
+(define emacs-citar-org-roam-latest (get-replacement emacs-citar-org-roam))
 (define emacs-citar-org-roam-fixed
   (package
     (inherit emacs-citar-org-roam-latest)
@@ -177,3 +180,5 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (native-inputs (modify-inputs (package-native-inputs emacs-compat)
                          (prepend lzip)))))
 (update-replacement emacs-compat emacs-compat-latest)
+
+(rewrite-all-replacements)

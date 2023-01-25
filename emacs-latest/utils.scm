@@ -9,12 +9,15 @@
   #:use-module (guix packages)
   #:export (latest
             package-it
-            find-replacement
-            update-replacement
-            with-emacs-xyz-latest
+            ;get-replacement
+            ;update-replacement
+            ;rewrite-all-replacements
+            ;with-emacs-xyz-latest
             package-commit
-            emacs-xyz-latest
+            ;emacs-xyz-latest
             write-latest-emacs-xyz))
+
+(eval-when (expand load eval)
 
 (define (latest-commit-and-hash pkg)
   (unless (eq? git-fetch (origin-method (package-source pkg)))
@@ -76,16 +79,25 @@
        (sha256 (base32 checksum))
        (file-name (git-file-name name version))))))
 
-(define %replacements-var (make-variable '()))
-
-(module-add! (resolve-module '(emacs-latest emacs-xyz)) '%replacements %replacements-var)
-
-(define (emacs-xyz-latest pkg)
-  (assq-ref (variable-ref %replacements-var) pkg))
- 
-(define (update-replacement old new)
-  (variable-set! %replacements-var
-                 (assq-set! (variable-ref %replacements-var) old new)))
+;;(define %replacements-var (make-variable '()))
+;;
+;;(module-add! (resolve-module '(emacs-latest emacs-xyz)) '%replacements %replacements-var)
+;;
+;;(define (get-replacement pkg)
+;;  (assq-ref (variable-ref %replacements-var) pkg))
+;; 
+;;(define (update-replacement old new)
+;;  (variable-set! %replacements-var
+;;                 (assq-set! (variable-ref %replacements-var) old new)))
+;;
+;;(define (rewrite-all-replacements)
+;;  (variable-set! %replacements-var
+;;                 (let* ((replacements (variable-ref %replacements-var))
+;;                        (with-replacements (package-input-rewriting replacements)))
+;;                   (map (lambda (el)
+;;                          (cons (car el)
+;;                                (with-replacements (cdr el))))
+;;                        replacements))))
 
 ;(define %replacements (make-variable '()))
 
@@ -137,19 +149,23 @@
       (let* ((pkg (module-ref (resolve-module '(gnu packages emacs-xyz)) sym))
              ;(sym-latest (symbol-append sym '-latest))
              (pkg-latest (package-commit pkg commit checksum)))
+        ;(format #t "package-it sym ~y ~y ~y" sym pkg pkg-latest)
         ;;pkg-latest))
-        (update-replacement pkg pkg-latest)))
+        ;;(update-replacement pkg pkg-latest)))
+        ;(cons sym (cons pkg pkg-latest))))
+        (cons pkg pkg-latest)))
       #:unwind? #t))
 
-(define-syntax latest
-  (syntax-rules ()
-    ((_ name commit checksum)
-     (package-it 'name commit checksum))))
-
 ;;(define-syntax latest
-;;  (lambda (x)
-;;    (syntax-case x ()
-;;      ((_ name commit checksum)
-;;       (let ((sym (syntax->datum #'name)))
-;;         #`(define-public #,(datum->syntax x (symbol-append sym '-latest))
-;;             (package-it 'name commit checksum)))))))
+;;  (syntax-rules ()
+;;    ((_ name commit checksum)
+;;     (package-it 'name commit checksum))))
+
+(define-syntax latest
+  (lambda (x)
+    (syntax-case x ()
+      ((_ name commit checksum)
+       (let ((sym (syntax->datum #'name)))
+         #`(define-public #,(datum->syntax x (symbol-append sym '-l))
+             (package-it 'name commit checksum)))))))
+)
