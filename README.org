@@ -16,32 +16,33 @@ https://guix.gnu.org/en/manual/devel/en/guix.html#Channels
 
 * Usage
 
+The function ~emacs-xyz-latest~ will return a package using the latest commit for some emacs package that must appear in /both/ the ~emacs-latest/commits.scm~ file of this channel /and/ be defined in ~emacs-xyz~ of /you/ guix.
+Since ~emacs-xyz-latest~ does not rewrite the package inputs, ~with-emacs-xyz-latest~ is provided to rewrite package inputs using all the packages in ~emacs-latest/commits.scm~.
+Thus together you can have the latest commits for all the emacs packages in ~emacs-xyz~ that use ~git-fetch~.
+
+For example, for several packages:
 #+begin_src scheme
-(use-modules (emacs-latest emacs-xyz-latest))
+(use-modules (gnu packages emacs-xyz)
+             (emacs-latest emacs-xyz))
 
-(define-public with-emacs-xyz-latest
-  (package-input-rewriting %emacs-xyz-latest-replacements))
-
-(with-emacs-xyz-latest emacs-org-latest)
+(map with-emacs-xyz-latest
+  (map emacs-xyz-latest
+    (list
+     emacs-vterm
+     emacs-org
+     emacs-magit)))
 #+end_src
-
-Note that if you are importing both ~(emacs-latest utils)~ and ~(emacs-latest emacs-xyz-latest)~, then ~(emacs-latest utils)~ must be imported /after/ ~(emacs-latest emacs-xyz-latest)~.
-  
 
 * Updating
 
 #+begin_src scheme
-;; guix repl -L . -- updater.scm
 (use-modules (emacs-latest utils))
-(latest-emacs-xyz "commits.data")
+(write-latest-emacs-xyz "emacs-latest/commits.scm")
 #+end_src
 
-* Testing
+* TODO 
 
-#+begin_src scheme
-(use-modules (emacs-latest emacs-xyz-latest))
-(format #t "----------------------------\n~a\n" (emacs-xyz-latest 'emacs-org))
-#+end_src
+I should print the guix commit used to generate the latest packages.
 
 * Sourcehut Custom Readme                                          :noexport:
 

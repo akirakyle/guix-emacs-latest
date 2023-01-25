@@ -7,7 +7,7 @@
   #:use-module (guix hash)
   #:use-module (guix base32)
   #:use-module (guix packages)
-  #:use-module (emacs-latest emacs-xyz-latest))
+  #:use-module (emacs-latest commits))
 
 (define (latest-commit-and-hash pkg)
   (unless (eq? git-fetch (origin-method (package-source pkg)))
@@ -35,10 +35,10 @@
     #:unwind? #t))
 
 (define %emacs-xyz-latest-module-def
-  "(define-module (emacs-latest emacs-xyz-latest)
+  "(define-module (emacs-latest commits)
   #:use-module (emacs-latest utils))
 
-(define-public %emacs-xyz-latest-replacements '())
+(define-public %replacements '())
 ")
 
 (define-public (write-latest-emacs-xyz file)
@@ -84,18 +84,23 @@
              (pkg-latest (package-commit pkg commit checksum)))
         ;(module-add! (current-module) sym-latest (make-variable pkg-latest))
         ;(module-export! (current-module) (list sym-latest))
-        (set! %emacs-xyz-latest-replacements
+        (set! %replacements
               (cons (cons pkg pkg-latest)
-                    %emacs-xyz-latest-replacements))
+                    %replacements))
         pkg-latest))
       #:unwind? #t))
 
 (define-syntax latest
-  (lambda (x)
-    (syntax-case x ()
-      ((_ name commit checksum)
-       (let ((sym (syntax->datum #'name)))
-         #`(define-public #,(datum->syntax x (symbol-append sym '-latest))
-             (package-it 'name commit checksum)))))))
+  (syntax-rules ()
+    ((_ name commit checksum)
+     (package-it 'name commit checksum))))
+
+;;(define-syntax latest
+;;  (lambda (x)
+;;    (syntax-case x ()
+;;      ((_ name commit checksum)
+;;       (let ((sym (syntax->datum #'name)))
+;;         #`(define-public #,(datum->syntax x (symbol-append sym '-latest))
+;;             (package-it 'name commit checksum)))))))
 
 (export latest)

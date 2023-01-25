@@ -1,7 +1,7 @@
-(define-module (emacs-latest emacs-xyz-latest)
+(define-module (emacs-latest commits)
   #:use-module (emacs-latest utils))
 
-(define-public %emacs-xyz-latest-replacements '())
+(define-public %replacements '())
 
 (latest eless "ee570e8987a34323cb229aa1b8b60b030590c7cf" "0svicnis34y07sych2cp8jd2225wwssd4bxlbhghady2psqan17q")
 (latest emacs-4clojure "6f494d3905284ccdd57aae3d8ac16fc7ab431596" "19mbfh504mli8mnf95xaych45nqnayrspymf5r80dky4jv43zzv8")
