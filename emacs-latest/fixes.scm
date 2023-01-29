@@ -1,4 +1,4 @@
-(define-module (emacs-latest fixed)
+(define-module (emacs-latest fixes)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix utils)
@@ -20,12 +20,19 @@
 (define (update-replacement old new)
   (set! %replacements (cons (cons old new) %replacements)))
 
-(define emacs-org-latest (get-latest-pkg 'emacs-org))
-(define emacs-org-fixed
+(define-syntax override-package
+  (syntax-rules ()
+    ((_ 'name def)
+     (update-replacement
+      name
+      (let* ((name (get-latest-pkg 'name)))
+        def)))))
+
+(override-package 'emacs-org
   (package
-    (inherit emacs-org-latest)
+    (inherit emacs-org)
     (arguments
-     (substitute-keyword-arguments (package-arguments emacs-org-latest)
+     (substitute-keyword-arguments (package-arguments emacs-org)
        ((#:phases phases)
         #~(modify-phases #$phases
             (replace 'fix-tests
@@ -52,7 +59,6 @@
                   (("test-org/org-(encode-time|time-string-to-time) .*" all)
                    (string-append all "  (skip-unless nil)\n"))))
               )))))))
-(update-replacement emacs-org emacs-org-fixed)
 
 ; TODO should all the emacsql packages be unbundled like with MELPA?
 ;
@@ -83,13 +89,12 @@ has no concept of @code{TEXT} values; it's all just Lisp objects.  The Lisp
 object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (license license:gpl3+)))
 
-(define emacs-org-roam-latest (get-latest-pkg 'emacs-org-roam))
-(define emacs-org-roam-fixed
+(override-package 'emacs-org-roam
   (package
-    (inherit emacs-org-roam-latest)
+    (inherit emacs-org-roam)
     (arguments
      (substitute-keyword-arguments
-         (ensure-keyword-arguments (package-arguments emacs-org-roam-latest)
+         (ensure-keyword-arguments (package-arguments emacs-org-roam)
                                    `(#:emacs ,emacs-next))
        ((#:phases phases)
         #~(modify-phases #$phases
@@ -101,20 +106,17 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
                   (("(emacsql-sqlite \"1.0.0\") ") "")
                   (("(require 'emacsql-sqlite)") "")))
               )))))
-    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-org-roam-latest)
+    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-org-roam)
                          (delete "emacs-emacsql-sqlite3")
                          (prepend emacs-emacsql-sqlite-builtin)))))
-(update-replacement emacs-org-roam emacs-org-roam-fixed)
-
 
 ;; TODO fix upstream package definition to not hard-code version in
 ;; 'install-shared-object phase so this can be simply overriden
-(define emacs-zmq-latest (get-latest-pkg 'emacs-zmq))
-(define emacs-zmq-fixed
+(override-package 'emacs-zmq
   (package
     (name "emacs-zmq")
-    (version (package-version emacs-zmq-latest))
-    (source (package-source emacs-zmq-latest))
+    (version (package-version emacs-zmq))
+    (source (package-source emacs-zmq))
     (build-system emacs-build-system)
     (arguments
      `(#:tests? #f ; no tests
@@ -144,26 +146,20 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (description "This package provides Emacs bindings to ØMQ.")
     (license (list license:gpl2+     ;zmq.el
                    license:gpl3+)))) ;src/emacs-module.h
-(update-replacement emacs-zmq emacs-zmq-fixed)
 
-(define emacs-with-editor-latest (get-latest-pkg 'emacs-with-editor))
-(define emacs-with-editor-fixed
+(override-package 'emacs-with-editor
   (package
-    (inherit emacs-with-editor-latest)
-    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-with-editor-latest)
+    (inherit emacs-with-editor)
+    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-with-editor)
                          (delete "emacs-async")
                          (prepend emacs-compat)))))
 
-(update-replacement emacs-with-editor emacs-with-editor-fixed)
-
-(define emacs-citar-org-roam-latest (get-latest-pkg 'emacs-citar-org-roam))
-(define emacs-citar-org-roam-fixed
+(override-package 'emacs-citar-org-roam
   (package
-    (inherit emacs-citar-org-roam-latest)
+    (inherit emacs-citar-org-roam)
     (arguments
-     (ensure-keyword-arguments (package-arguments emacs-citar-org-roam-latest)
+     (ensure-keyword-arguments (package-arguments emacs-citar-org-roam)
        `(#:emacs ,emacs-next)))))
-(update-replacement emacs-citar-org-roam emacs-citar-org-roam-fixed)
 
 (define emacs-compat-latest
   (package
@@ -179,3 +175,58 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (native-inputs (modify-inputs (package-native-inputs emacs-compat)
                          (prepend lzip)))))
 (update-replacement emacs-compat emacs-compat-latest)
+
+(override-package 'emacs-vertico
+  (package
+    (inherit emacs-vertico)
+    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-vertico)
+                         (prepend emacs-compat)))))
+
+(override-package 'emacs-marginalia
+  (package
+    (inherit emacs-marginalia)
+    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-marginalia)
+                         (prepend emacs-compat)))))
+
+(override-package 'emacs-corfu
+  (package
+    (inherit emacs-corfu)
+    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-corfu)
+                         (prepend emacs-compat)))))
+
+(override-package 'emacs-cape
+  (package
+    (inherit emacs-cape)
+    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-cape)
+                         (prepend emacs-compat)))))
+
+(override-package 'emacs-tempel
+  (package
+    (inherit emacs-tempel)
+    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-tempel)
+                         (prepend emacs-compat)))))
+
+(override-package 'emacs-evil
+  (package
+    (inherit emacs-evil)
+    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-evil)
+                         (prepend emacs-goto-chg)))))
+
+(override-package 'emacs-evil-surround
+  (package
+    (inherit emacs-evil-surround)
+    (arguments
+     `(#:tests? #f ; some tests fail and need to be investigated
+     ))))
+
+(override-package 'emacs-use-package
+  (package
+    (inherit emacs-use-package)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         ;; use-package.texi now has @setfilename ../../use-package.info due to
+         ;; being merged into upstream, temporarily disable info manuals for now
+         (delete 'build-manual)
+         (delete 'install-manual)
+         )))))

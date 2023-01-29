@@ -14,27 +14,30 @@ https://guix.gnu.org/en/manual/devel/en/guix.html#Channels
     "963C 2413 0BD3 BF1B 624C  EF4C 8850 284C 20B8 078D"))))
 #+end_src
 
-* TODO Usage
+* Usage
 
-The function ~emacs-xyz-latest~ will return a package using the latest commit for some emacs package that must appear in /both/ the ~emacs-latest/commits.scm~ file of this channel /and/ be defined in ~emacs-xyz~ of /you/ guix.
-Since ~emacs-xyz-latest~ does not rewrite the package inputs, ~with-emacs-xyz-latest~ is provided to rewrite package inputs using all the packages in ~emacs-latest/commits.scm~.
-Thus together you can have the latest commits for all the emacs packages in ~emacs-xyz~ that use ~git-fetch~.
-
-For example, for several packages:
 #+begin_src scheme
 (use-modules (gnu packages emacs-xyz)
              (emacs-latest emacs-xyz))
 
-(map with-emacs-xyz-latest
-  (map emacs-xyz-latest
-    (list
-     emacs-vterm
-     emacs-org
-     emacs-magit)))
-; FIXME: currently having propogated inputs of something in the list also in the list causes conflicting entries
+(map emacs-xyz-latest
+  (list
+   emacs-vterm
+   emacs-org
+   emacs-magit))
 #+end_src
 
-* Updating
+~emacs-xyz-latest~ can be applied to any package in the ~(gnu packages emacs-xyz)~ and will apply [[https://guix.gnu.org/en/manual/devel/en/guix.html#index-package_002dinput_002drewriting][package-input-rewriting]] on that package and all its dependencies that appear in 
+the ~emacs-latest/commits.scm~ file of this channel.
+If you only want the latest version of a single package you can use ~emacs-xyz-latest-only~.
+
+Some points of caution!
+- Mixing packages from ~(emacs-latest emacs-xyz)~ and ~(gnu packages emacs-xyz)~ in a profile has the potential to cause conflicts since all emacs package dependencies are propagated.
+  - Applying ~emacs-xyz-latest~ to /every/ package in a profile should, in principle never result in conflicts.
+- The more significantly your guix version differs from the guix version used to generate the packages here, the more likely there are to be issues. There's some amount of robustness to differences, so that if this channel has packages that your guix does not, it will just ignore them.
+- Packages can an will break! ~fixes.scm~ attempts to collect overrides to fix the packages, but I will only be maintaining those fixes which affect me, and my responsiveness to updating the fixes will vary.
+
+* Updating ~commits.scm~
 
 #+begin_src scheme
 (use-modules (emacs-latest utils))
@@ -43,7 +46,9 @@ For example, for several packages:
 
 * TODO 
 
-I should print the guix commit used to generate the latest packages.
+- Add emacs itself so that I can run the latest upstream version of emacs. 
+- Put the guix commit used to generate the ~commits.scm~ somewhere
+- Set up automated daily updates
 
 * Sourcehut Custom Readme                                          :noexport:
 
