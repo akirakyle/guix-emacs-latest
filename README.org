@@ -1,4 +1,5 @@
 #+title: Guix channel for the latest commits of emacs-xyz packages
+#+options: toc:nil num:nil html-postamble:nil html-style:nil
 
 * Channel setup
 https://guix.gnu.org/en/manual/devel/en/guix.html#Channels

@@ -1,5 +1,6 @@
 (define-module (emacs-latest utils)
   #:use-module (srfi srfi-1)
+  #:use-module (ice-9 textual-ports)
   #:use-module (guix store)
   #:use-module (guix utils)
   #:use-module (guix git)
