@@ -57,6 +57,9 @@
                    (string-append all "  (skip-unless nil)\n")))
                 (substitute* "testing/lisp/test-org.el"
                   (("test-org/org-(encode-time|time-string-to-time) .*" all)
+                   (string-append all "  (skip-unless nil)\n")))
+                (substitute* "testing/lisp/test-ox-texinfo.el"
+                  (("test-ox-texinfo/end-to-end-(inline|sanity-check-displayed) .*" all)
                    (string-append all "  (skip-unless nil)\n"))))
               )))))))
 
@@ -79,7 +82,7 @@
     (name "emacs-emacsql-sqlite-builtin")
     (build-system emacs-build-system)
     (arguments
-     `(#:include '("^emacsql.el$" "^emacsql-compiler.el$" "^emacsql-sqlite-builtin.el$")
+     `(#:include '("^emacsql.el$" "^emacsql-sqlite-common.el$" "^emacsql-compiler.el$" "^emacsql-sqlite-builtin.el$")
        #:emacs ,emacs-next))
     (home-page "https://github.com/skeeto/emacsql")
     (synopsis "Emacs high-level SQL database front-end")
@@ -161,51 +164,6 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
      (ensure-keyword-arguments (package-arguments emacs-citar-org-roam)
        `(#:emacs ,emacs-next)))))
 
-(define emacs-compat-latest
-  (package
-    (inherit emacs-compat)
-    (version "29.1.3.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://elpa.gnu.org/packages/"
-                                  "compat-" version ".tar.lz"))
-              (sha256
-               (base32
-                "0jnk81rg5w6zhf413nf3j72i2mr8vfdms55gahrdx28727w8gfj8"))))
-    (native-inputs (modify-inputs (package-native-inputs emacs-compat)
-                         (prepend lzip)))))
-(update-replacement emacs-compat emacs-compat-latest)
-
-(override-package 'emacs-vertico
-  (package
-    (inherit emacs-vertico)
-    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-vertico)
-                         (prepend emacs-compat)))))
-
-(override-package 'emacs-marginalia
-  (package
-    (inherit emacs-marginalia)
-    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-marginalia)
-                         (prepend emacs-compat)))))
-
-(override-package 'emacs-corfu
-  (package
-    (inherit emacs-corfu)
-    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-corfu)
-                         (prepend emacs-compat)))))
-
-(override-package 'emacs-cape
-  (package
-    (inherit emacs-cape)
-    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-cape)
-                         (prepend emacs-compat)))))
-
-(override-package 'emacs-tempel
-  (package
-    (inherit emacs-tempel)
-    (propagated-inputs (modify-inputs (package-propagated-inputs emacs-tempel)
-                         (prepend emacs-compat)))))
-
 (override-package 'emacs-evil
   (package
     (inherit emacs-evil)
@@ -218,15 +176,3 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (arguments
      `(#:tests? #f ; some tests fail and need to be investigated
      ))))
-
-(override-package 'emacs-use-package
-  (package
-    (inherit emacs-use-package)
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         ;; use-package.texi now has @setfilename ../../use-package.info due to
-         ;; being merged into upstream, temporarily disable info manuals for now
-         (delete 'build-manual)
-         (delete 'install-manual)
-         )))))
