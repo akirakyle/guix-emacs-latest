@@ -9,6 +9,7 @@
   #:use-module (guix hash)
   #:use-module (guix base32)
   #:use-module (guix packages)
+  #:use-module (guix build-system emacs)
   #:export (latest
             package-it
             package-commit
@@ -74,8 +75,12 @@
        (sha256 (base32 checksum))
        (file-name (git-file-name name version))))
     (arguments
-     (substitute-keyword-arguments (package-arguments pkg)
-       ((#:emacs emacs) `,emacs-next-pgtk-latest)))))
+     (if (eq? (package-build-system pkg) emacs-build-system)
+         (ensure-keyword-arguments (package-arguments pkg)
+                                   `(#:emacs ,emacs-next-pgtk-latest))
+         (package-arguments pkg)))))
+     ;(substitute-keyword-arguments (package-arguments pkg)
+     ;  ((#:emacs emacs) `,emacs-next-pgtk-latest)))))
 
 (define (package-it sym commit checksum)
   (with-exception-handler

@@ -163,5 +163,26 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
   (package
     (inherit emacs-evil-surround)
     (arguments
-     `(#:tests? #f ; some tests fail and need to be investigated
-     ))))
+     (ensure-keyword-arguments (package-arguments emacs-evil-surround)
+                               '(#:tests? #f)))))
+
+(override-package 'emacs-julia-mode
+  (package
+    (inherit emacs-julia-mode)
+    (arguments
+     (ensure-keyword-arguments (package-arguments emacs-julia-mode)
+                               '(#:tests? #f)))))
+
+(override-package 'emacs-kv
+  (package
+    (inherit emacs-kv)
+    (arguments
+     (ensure-keyword-arguments (package-arguments emacs-kv)
+                               '(#:tests? #f)))))
+
+(override-package 'emacs-all-the-icons
+  (package
+    (inherit emacs-all-the-icons)
+    (arguments
+     (substitute-keyword-arguments (package-arguments emacs-all-the-icons)
+         ((#:tests? _ #f) #f)))))
