@@ -9,7 +9,6 @@
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages compression)
-  #:use-module (gnu packages emacs)
   #:use-module (gnu packages emacs-xyz))
 
 (define-public %replacements '())
@@ -82,8 +81,7 @@
     (name "emacs-emacsql-sqlite-builtin")
     (build-system emacs-build-system)
     (arguments
-     `(#:include '("^emacsql.el$" "^emacsql-sqlite-common.el$" "^emacsql-compiler.el$" "^emacsql-sqlite-builtin.el$")
-       #:emacs ,emacs-next))
+     `(#:include '("^emacsql.el$" "^emacsql-sqlite-common.el$" "^emacsql-compiler.el$" "^emacsql-sqlite-builtin.el$")))
     (home-page "https://github.com/skeeto/emacsql")
     (synopsis "Emacs high-level SQL database front-end")
     (description "Any readable Lisp value can be stored as a value in EmacSQL,
@@ -96,9 +94,7 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
   (package
     (inherit emacs-org-roam)
     (arguments
-     (substitute-keyword-arguments
-         (ensure-keyword-arguments (package-arguments emacs-org-roam)
-                                   `(#:emacs ,emacs-next))
+     (substitute-keyword-arguments (package-arguments emacs-org-roam)
        ((#:phases phases)
         #~(modify-phases #$phases
             (add-after 'unpack 'fix-package-requires
@@ -156,13 +152,6 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (propagated-inputs (modify-inputs (package-propagated-inputs emacs-with-editor)
                          (delete "emacs-async")
                          (prepend emacs-compat)))))
-
-(override-package 'emacs-citar-org-roam
-  (package
-    (inherit emacs-citar-org-roam)
-    (arguments
-     (ensure-keyword-arguments (package-arguments emacs-citar-org-roam)
-       `(#:emacs ,emacs-next)))))
 
 (override-package 'emacs-evil
   (package

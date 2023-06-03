@@ -1,4 +1,5 @@
 (define-module (emacs-latest utils)
+  #:use-module (emacs-latest emacs)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 textual-ports)
   #:use-module (guix store)
@@ -71,7 +72,10 @@
                                      (origin-uri (package-source pkg)))))
              (commit commit)))
        (sha256 (base32 checksum))
-       (file-name (git-file-name name version))))))
+       (file-name (git-file-name name version))))
+    (arguments
+     (substitute-keyword-arguments (package-arguments pkg)
+       ((#:emacs emacs) `,emacs-next-pgtk-latest)))))
 
 (define (package-it sym commit checksum)
   (with-exception-handler

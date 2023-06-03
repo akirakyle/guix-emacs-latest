@@ -45,27 +45,27 @@ Some points of caution!
 (write-latest-emacs-xyz "emacs-latest/commits.scm")
 #+end_src
 
-* TODO 
+* TODO TODO
 
 - Add emacs itself so that I can run the latest upstream version of emacs. 
 - Put the guix commit used to generate the ~commits.scm~ somewhere
 - Set up automated daily updates
 
-* Sourcehut Custom Readme                                          :noexport:
-
-https://man.sr.ht/git.sr.ht/#setting-a-custom-readme
-
-#+begin_src sh :results silent :exports none
-guix shell curl jq -- bash
-jq -sR '{
-    "query": "mutation UpdateRepo($id: Int!, $readme: String!) {
-      updateRepository(id: $id, input: { readme: $readme }) { id }
-    }", "variables": {
-      "id": 251847,
-      "readme": .
-    } }' < README.html \
-  | curl --oauth2-bearer $(pass show app/sr.ht) \
-    -H "Content-Type: application/json" \
-    -d@- https://git.sr.ht/query
-#+end_src
+# * Sourcehut Custom Readme                                          :noexport:
+# 
+# https://man.sr.ht/git.sr.ht/#setting-a-custom-readme
+# 
+# #+begin_src sh :results silent :exports none
+# guix shell curl jq -- bash
+# jq -sR '{
+#     "query": "mutation UpdateRepo($id: Int!, $readme: String!) {
+#       updateRepository(id: $id, input: { readme: $readme }) { id }
+#     }", "variables": {
+#       "id": 251847,
+#       "readme": .
+#     } }' < README.html \
+#  | curl --oauth2-bearer $(pass show app/sr.ht) \
+#     -H "Content-Type: application/json" \
+#     -d@- https://git.sr.ht/query
+# #+end_src
 
