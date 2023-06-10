@@ -185,4 +185,7 @@ object @code{nil} corresponds 1:1 with @code{NULL} in the database.")
     (inherit emacs-all-the-icons)
     (arguments
      (substitute-keyword-arguments (package-arguments emacs-all-the-icons)
-         ((#:tests? _ #f) #f)))))
+       ((#:phases phases)
+        #~(modify-phases #$phases
+            (delete 'check)))))))
+         ;;((#:tests? _ #f) #f)))))
